@@ -20,10 +20,8 @@ from httpx import AsyncClient
 from OpenAIAuth import Authenticator
 from OpenAIAuth import Error as AuthError
 
-from . import typings as t
-from .utils import create_completer
-from .utils import create_session
-from .utils import get_input
+from .typings import *
+from .utils import create_completer, create_session, get_input
 
 if __name__ == "__main__":
     logging.basicConfig(
@@ -69,7 +67,7 @@ def logger(is_timed: bool):
 
 BASE_URL = environ.get("CHATGPT_BASE_URL") or "https://bypass.churchless.tech/api/"
 
-bcolors = t.colors()
+bcolors = colors()
 
 
 class Chatbot:
@@ -126,7 +124,7 @@ class Chatbot:
             cached_access_token = self.__get_cached_access_token(
                 self.config.get("email", None),
             )
-        except t.Error as error:
+        except Error as error:
             if error.code == 5:
                 raise
             cached_access_token = None
@@ -182,7 +180,7 @@ class Chatbot:
         elif "session_token" in self.config:
             pass
         elif "email" not in self.config or "password" not in self.config:
-            error = t.AuthenticationError("Insufficient login details provided!")
+            error = AuthenticationError("Insufficient login details provided!")
             raise error
         if "access_token" not in self.config:
             try:
@@ -260,26 +258,26 @@ class Chatbot:
                 d_access_token = base64.b64decode(s_access_token[1])
                 d_access_token = json.loads(d_access_token)
             except base64.binascii.Error:
-                error = t.Error(
+                error = Error(
                     source="__get_cached_access_token",
                     message="Invalid access token",
-                    code=t.ErrorType.INVALID_ACCESS_TOKEN_ERROR,
+                    code=ErrorType.INVALID_ACCESS_TOKEN_ERROR,
                 )
                 raise error from None
             except json.JSONDecodeError:
-                error = t.Error(
+                error = Error(
                     source="__get_cached_access_token",
                     message="Invalid access token",
-                    code=t.ErrorType.INVALID_ACCESS_TOKEN_ERROR,
+                    code=ErrorType.INVALID_ACCESS_TOKEN_ERROR,
                 )
                 raise error from None
 
             exp = d_access_token.get("exp", None)
             if exp is not None and exp < time.time():
-                error = t.Error(
+                error = Error(
                     source="__get_cached_access_token",
                     message="Access token expired",
-                    code=t.ErrorType.EXPIRED_ACCESS_TOKEN_ERROR,
+                    code=ErrorType.EXPIRED_ACCESS_TOKEN_ERROR,
                 )
                 raise error
 
@@ -328,7 +326,7 @@ class Chatbot:
             "email" not in self.config or "password" not in self.config
         ) and "session_token" not in self.config:
             log.error("Insufficient login details provided!")
-            error = t.AuthenticationError("Insufficient login details provided!")
+            error = AuthenticationError("Insufficient login details provided!")
             raise error
         auth = Authenticator(
             email_address=self.config.get("email"),
@@ -383,10 +381,10 @@ class Chatbot:
 
         if parent_id is not None and conversation_id is None:
             log.error("conversation_id must be set once parent_id is set")
-            error = t.Error(
+            error = Error(
                 source="User",
                 message="conversation_id must be set once parent_id is set",
-                code=t.ErrorType.USER_ERROR,
+                code=ErrorType.USER_ERROR,
             )
             raise error
 
@@ -467,10 +465,10 @@ class Chatbot:
             line = str(line)[2:-1]
             if line.lower() == "internal server error":
                 log.error(f"Internal Server Error: {line}")
-                error = t.Error(
+                error = Error(
                     source="ask",
                     message="Internal Server Error",
-                    code=t.ErrorType.SERVER_ERROR,
+                    code=ErrorType.SERVER_ERROR,
                 )
                 raise error
             if not line or line is None:
@@ -492,28 +490,28 @@ class Chatbot:
                 log.error("Field missing", exc_info=True)
                 log.error(response.text)
                 if response.status_code == 401:
-                    error = t.Error(
+                    error = Error(
                         source="ask",
                         message="Permission denied",
-                        code=t.ErrorType.AUTHENTICATION_ERROR,
+                        code=ErrorType.AUTHENTICATION_ERROR,
                     )
                 elif response.status_code == 403:
-                    error = t.Error(
+                    error = Error(
                         source="ask",
                         message="Cloudflare triggered a 403 error",
-                        code=t.ErrorType.CLOUDFLARE_ERROR,
+                        code=ErrorType.CLOUDFLARE_ERROR,
                     )
                 elif response.status_code == 429:
-                    error = t.Error(
+                    error = Error(
                         source="ask",
                         message="Rate limit exceeded",
-                        code=t.ErrorType.RATE_LIMIT_ERROR,
+                        code=ErrorType.RATE_LIMIT_ERROR,
                     )
                 else:
-                    error = t.Error(
+                    error = Error(
                         source="ask",
                         message=line,
-                        code=t.ErrorType.SERVER_ERROR,
+                        code=ErrorType.SERVER_ERROR,
                     )
                 raise error
 
@@ -737,7 +735,7 @@ class Chatbot:
         """
         if response.status_code != 200:
             print(response.text)
-            error = t.Error(
+            error = Error(
                 source="OpenAI",
                 message=response.text,
                 code=response.status_code,
@@ -883,10 +881,10 @@ class AsyncChatbot(Chatbot):
         Ask a question to the chatbot
         """
         if parent_id is not None and conversation_id is None:
-            error = t.Error(
+            error = Error(
                 source="User",
                 message="conversation_id must be set once parent_id is set",
-                code=t.ErrorType.SERVER_ERROR,
+                code=ErrorType.SERVER_ERROR,
             )
             raise error
 
@@ -1212,6 +1210,7 @@ def main(config: dict) -> NoReturn:
                 """
             !help - Show this message
             !reset - Forget the current conversation
+            !delete - Delete current conversation
             !config - Show the current configuration
             !rollback x - Rollback the conversation (x being the number of messages to rollback)
             !exit - Exit this program
@@ -1221,6 +1220,14 @@ def main(config: dict) -> NoReturn:
         elif command == "!reset":
             chatbot.reset_chat()
             print("Chat session successfully reset.")
+        elif command == "!delete":
+            if chatbot.conversation_id is None:
+                print("No conversation to delete.")
+                return True
+            
+            chatbot.delete_conversation(chatbot.conversation_id)
+            chatbot.conversation_id = None
+            print("Chat session successfully delete.")
         elif command == "!config":
             print(json.dumps(chatbot.config, indent=4))
         elif command.startswith("!rollback"):
@@ -1267,6 +1274,7 @@ def main(config: dict) -> NoReturn:
         [
             "!help",
             "!reset",
+            "!delete",
             "!config",
             "!rollback",
             "!exit",
@@ -1295,7 +1303,7 @@ def main(config: dict) -> NoReturn:
     except (KeyboardInterrupt, EOFError):
         exit()
     except Exception as exc:
-        error = t.CLIError("command line program unknown error")
+        error = CLIError("command line program unknown error")
         raise error from exc
 
 
