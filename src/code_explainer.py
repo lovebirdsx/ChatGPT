@@ -9,8 +9,7 @@ GPT_MODE = 'gpt-3.5-turbo'
 
 TRUNCK_SIZE = 1024
 CODE_PROMPT = 'You are professinal programmer, explain the code, reply in chinese:'
-SUMARIZE_PROMPT = '''Summarize the following text with the most unique and helpful points,
-into a numbered list of key points and takeaways, replay in chinese:'''
+SUMARIZE_PROMPT = '''Summarize the following text with the most unique and helpful points, into a numbered list of key points and takeaways, reply in chinese:'''
 
 def split_code(gpt_mode: str, code: str) -> tuple[list[str], int]:
     encoder = tiktoken.encoding_for_model(gpt_mode)
@@ -46,7 +45,7 @@ def do_code_explain(bot: Chatbot, content: str) -> str:
 
 def do_code_explain_cmd(path: str):
     if not os.path.exists(path):
-        print('Path does not exist.')
+        print(f'路径不存在:{path}')
         return
 
     print(f'代码路径: {path}')
