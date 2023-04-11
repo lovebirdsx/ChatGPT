@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "V1",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/revChatGPT/V1.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src/revChatGPT",
+            "justMyCode": true
+        },
+        {
+            "name": "code explain",
+            "type": "python",
+            "request": "launch",
+            "program": "code_explainer.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": ["code_explainer.py"],
+            "justMyCode": true
+        },
+        {
+            "name": "code explain 2",
+            "type": "python",
+            "request": "launch",
+            "program": "code_explainer.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": ["revChatGPT/V1.py"],
+            "justMyCode": true
+        },
+        {
+            "name": "test code explain",
+            "type": "python",
+            "request": "launch",
+            "program": "code_explainer.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/src",
+            "args": ["-t"],
+            "justMyCode": true
+        }
+    ]
+}
