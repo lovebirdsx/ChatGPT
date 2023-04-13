@@ -1,4 +1,4 @@
-from common import Prompt, run_by_prompt
+from common import Prompt, run_app_by_prompt
 
 TRUNK_PROMPT_FIRST = '''The code I sent you is a part of a code file.
 Please help me generate a summary.
@@ -26,4 +26,4 @@ def create_prompt() -> Prompt:
     )
 
 if __name__ == '__main__':
-    run_by_prompt(create_prompt(), 'code_explainer')
+    run_app_by_prompt(create_prompt(), 'code_explainer')

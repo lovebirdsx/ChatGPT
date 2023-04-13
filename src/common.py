@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 import time
 import pyperclip
 import tiktoken
@@ -65,7 +64,7 @@ class Prompt:
         self.sumarize_muti = sumarize_muti
         self.sumarize_single = sumarize_single
 
-def do_code_explain(bot: Chatbot, content: str, prompt: Prompt ) -> str:
+def do_ask_for_large_file(bot: Chatbot, content: str, prompt: Prompt) -> str:
     trunks, token_count = split_code(bot.config['model'], content)
     print(f'Code length: {len(content)} token_count: {token_count} trunks: {len(trunks)}')
     if len(trunks) > 1:
@@ -73,25 +72,23 @@ def do_code_explain(bot: Chatbot, content: str, prompt: Prompt ) -> str:
         i = 0
         for trunk in trunks:
             i += 1
-            prompt = prompt.trunk_first if i == 1 else prompt.trunk_next
-            texts.append(ask(bot, prompt, trunk, f'[{i}/{len(trunks)}] '))
+            prompt0 = prompt.trunk_first if i == 1 else prompt.trunk_next
+            texts.append(ask(bot, prompt0, trunk, f'[{i}/{len(trunks)}] '))
         return ask(bot, prompt.sumarize_muti, '\n'.join(texts))
     else:
         return ask(bot, prompt.sumarize_single, content)
 
-def do_code_explain_cmd(path: str, prompt: Prompt) -> str:
+def do_ask_for_large_file_cmd(path: str, prompt: Prompt) -> str:
     if not os.path.exists(path):
         print(f'路径不存在:{path}')
         return
-
-    print(f'代码路径: {path}')
     
     with open(path, 'r') as f:
         code = f.read()
         conf = configure()
         # print(conf)
         bot = Chatbot(conf)
-        result = do_code_explain(bot, code, prompt)
+        result = do_ask_for_large_file(bot, code, prompt)
 
         max_retry_delete = 10
         for i in range(0, max_retry_delete):
@@ -113,17 +110,21 @@ def create_args_parser(prog_name: str) -> argparse.ArgumentParser:
 
     return parser
 
-def to_cache_path(name:str, path: str) -> str:
-    if not os.path.isabs(path):
-        path = os.path.abspath(path)
-    formated_path = path.replace('/', '_').replace('\\', '_').replace(':', '_')
+def get_save_path() -> str:
     home = os.getenv('HOME')
     if not home:
         home = os.getenv('USERPROFILE')
-    return os.path.normpath(os.path.join(home, '.code_explainer/cache', name, formated_path))
+    return os.path.normpath(os.path.join(home, '.chatgpt_tools'))
+
+def cal_cache_path(name:str, path: str) -> str:
+    if not os.path.isabs(path):
+        path = os.path.abspath(path)
+    formated_path = path.replace('/', '_').replace('\\', '_').replace(':', '_')
+    save_path = get_save_path()
+    return os.path.normpath(os.path.join(save_path, 'cache', name, formated_path))
 
 def read_cache(name: str, path: str) -> str:
-    cache_path = to_cache_path(name, path)
+    cache_path = cal_cache_path(name, path)
     if not os.path.exists(cache_path):
         return ''
     
@@ -135,7 +136,7 @@ def read_cache(name: str, path: str) -> str:
         return f.read()
 
 def write_cache(name: str, path: str, content: str) -> None:
-    cache_path = to_cache_path(name, path)
+    cache_path = cal_cache_path(name, path)
     if not os.path.exists(cache_path):
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
 
@@ -151,17 +152,15 @@ def test_split_code():
         print(f'Code length: {len(code)} token_count: {token_count} trunks: {len(trunks)}')
 
 def test_get_cache_path():
-    print(to_cache_path('revChatGPT/typings.py'))
-    print(to_cache_path('f:\\revChatGPT\\typings.py'))
+    print(cal_cache_path('revChatGPT/typings.py'))
+    print(cal_cache_path('f:\\revChatGPT\\typings.py'))
 
 def test():
     test_split_code()
 
-def run_by_prompt(prompt: Prompt, prog_name: str, test_fun = None, args = None) -> None:
+def run_app_by_prompt(prompt: Prompt, prog_name: str, test_fun = None, args = None) -> None:
     parser = create_args_parser(prog_name)
     args = parser.parse_args(args)
-
-    print(sys.argv)
 
     if args.test:
         test_fun() if test_fun else test()
@@ -180,13 +179,11 @@ def run_by_prompt(prompt: Prompt, prog_name: str, test_fun = None, args = None) 
             exit(0)
     
     if args.file:
-        result = do_code_explain_cmd(args.file, prompt)
+        result = do_ask_for_large_file_cmd(args.file, prompt)
         if not result:
             exit(1)
 
-        if args.cache:
-            write_cache(prog_name, args.file, result)
-        
+        write_cache(prog_name, args.file, result)
         pyperclip.copy(result)
         print(f'\n已复制到剪贴板')
         exit(0)
