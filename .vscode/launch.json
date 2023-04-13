@@ -20,7 +20,7 @@
             "program": "code_explainer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
-            "args": ["code_explainer.py"],
+            "args": ["-c", "-f", "code_explainer.py"],
             "justMyCode": true
         },
         {
@@ -30,7 +30,7 @@
             "program": "code_explainer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
-            "args": ["revChatGPT/V1.py"],
+            "args": ["-c", "-f", "revChatGPT/V1.py"],
             "justMyCode": true
         },
         {
