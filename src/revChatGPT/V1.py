@@ -573,10 +573,10 @@ class Chatbot:
         """
         if parent_id is not None and conversation_id is None:
             log.error("conversation_id must be set once parent_id is set")
-            error = t.Error(
+            error = Error(
                 source="User",
                 message="conversation_id must be set once parent_id is set",
-                code=t.ErrorType.USER_ERROR,
+                code=ErrorType.USER_ERROR,
             )
             raise error
 
@@ -647,10 +647,10 @@ class Chatbot:
             line = str(line)[2:-1]
             if line.lower() == "internal server error":
                 log.error(f"Internal Server Error: {line}")
-                error = t.Error(
+                error = Error(
                     source="ask",
                     message="Internal Server Error",
-                    code=t.ErrorType.SERVER_ERROR,
+                    code=ErrorType.SERVER_ERROR,
                 )
                 raise error
             if not line or line is None:
@@ -672,28 +672,28 @@ class Chatbot:
                 log.error("Field missing", exc_info=True)
                 log.error(response.text)
                 if response.status_code == 401:
-                    error = t.Error(
+                    error = Error(
                         source="continue_write",
                         message="Permission denied",
-                        code=t.ErrorType.AUTHENTICATION_ERROR,
+                        code=ErrorType.AUTHENTICATION_ERROR,
                     )
                 elif response.status_code == 403:
-                    error = t.Error(
+                    error = Error(
                         source="continue_write",
                         message="Cloudflare triggered a 403 error",
-                        code=t.ErrorType.CLOUDFLARE_ERROR,
+                        code=ErrorType.CLOUDFLARE_ERROR,
                     )
                 elif response.status_code == 429:
-                    error = t.Error(
+                    error = Error(
                         source="continue_write",
                         message="Rate limit exceeded",
-                        code=t.ErrorType.RATE_LIMIT_ERROR,
+                        code=ErrorType.RATE_LIMIT_ERROR,
                     )
                 else:
-                    error = t.Error(
+                    error = Error(
                         source="continue_write",
                         message=line,
-                        code=t.ErrorType.SERVER_ERROR,
+                        code=ErrorType.SERVER_ERROR,
                     )
                 raise error
             message: str = line["message"]["content"]["parts"][0]
@@ -1004,10 +1004,10 @@ class AsyncChatbot(Chatbot):
             _type_: _description_
         """
         if parent_id is not None and conversation_id is None:
-            error = t.Error(
+            error = Error(
                 source="User",
                 message="conversation_id must be set once parent_id is set",
-                code=t.ErrorType.SERVER_ERROR,
+                code=ErrorType.SERVER_ERROR,
             )
             raise error
 
