@@ -47,7 +47,7 @@
             "name": "test code review",
             "type": "python",
             "request": "launch",
-            "program": "code_review.py",
+            "program": "code_reviewer.py",
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}/src",
             "args": ["-t"],
