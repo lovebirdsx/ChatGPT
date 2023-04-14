@@ -16,8 +16,9 @@ SUMARIZE_MUTI_PROMPT = '''The following content is code reviews of different par
 Please summarize them with the most unique and helpful points, into a list of key points and takeaways.
 Reply in chinese:'''
 
-SUMARIZE_SINGLE_PROMPT = '''Bellow is the code patch, please help me do a brief code review.
-If any bug risk and improvement suggestion are welcome. Reply in chinese:'''
+SUMARIZE_SINGLE_PROMPT = '''Bellow is the code patch, First, please help me do a brief code review,
+If any bug risk and improvement suggestion are welcome. Then, please provide a commit message.
+Reply in chinese:'''
 
 PROG_NAME = 'code_reviewer'
 
@@ -57,22 +58,22 @@ def gen_patch(repo: git.Repo, file) -> str:
 def gen_review_header(repo: git.Repo) -> str:
     repo_name = os.path.basename(repo.working_dir)
     branch_name = repo.active_branch.name
-    commit_id = repo.head.commit.hexsha
     commit_message = repo.head.commit.message
 
+    lines = [
+        '# 代码评审',
+        '',
+        f'版本库：{repo_name}',
+        f'分支：{branch_name}',
+    ]
+
     if not repo.is_dirty():
-        lines = [
-            f'# 版本库：{repo_name} 分支：{branch_name} 提交：{commit_id}',
-            '',
-            f'提交信息 {commit_message} by {repo.head.commit.author}',
-            '',
-        ]
+        lines.append(f'提交信息：{commit_message.strip()}')
+        lines.append(f'提交者：{repo.head.commit.author}')
     else:
-        lines = [
-            f'# 版本库：{repo_name} 分支：{branch_name} (未提交)',
-            '',
-        ]
-    return '\r\n'.join(lines)
+        lines.append('提交信息：(未提交)')
+
+    return '\n'.join(lines) + '\n'
     
 
 def test() -> None:
@@ -103,7 +104,6 @@ if __name__ == '__main__':
     review_header = gen_review_header(repo)
     repo_name = os.path.basename(repo.working_dir)
     result_path = os.path.normpath(os.path.join(get_save_path(), f'code_reviewer/{repo_name}.md'))
-    write_file(result_path, review_header + result)
+    write_file(result_path, review_header + '\n' + result + '\n')
     print(f'结果保存在：{result_path}')
     open_file(result_path)
-        

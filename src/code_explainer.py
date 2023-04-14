@@ -43,10 +43,8 @@ def gen_explain_header(path: str) -> str:
         f'# {path}',
         '',
         f'[打开](file:///{path})'
-        '',
-        '',
     ]
-    return '\n'.join(lines)
+    return '\n'.join(lines) + '\n'
 
 def test() -> None:
     print('测试通过')
