@@ -13,12 +13,13 @@ TRUNK_PROMPT_NEXT = '''Please continue to do code view.
 If any bug risk and improvement suggestion are welcome. Reply in chinese:'''
 
 SUMARIZE_MUTI_PROMPT = '''The following content is code reviews of different parts of the same code patch.
-Please summarize them with the most unique and helpful points, into a list of key points and takeaways.
-Reply in chinese:'''
+First, please summarize them with the most unique and helpful points, into a list of key points and takeaways.
+Then, please provide a commit message 30 words or less. Please reply in chinese:'''
 
 SUMARIZE_SINGLE_PROMPT = '''Bellow is the code patch, First, please help me do a brief code review,
-If any bug risk and improvement suggestion are welcome. Then, please provide a commit message.
-Reply in chinese:'''
+If any bug risk and improvement suggestion are welcome. 
+Then, please provide a commit message 30 words or less.
+Please reply in chinese:'''
 
 PROG_NAME = 'code_reviewer'
 
